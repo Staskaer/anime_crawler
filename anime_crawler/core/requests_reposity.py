@@ -1,7 +1,9 @@
 from anime_crawler.http.requests_block import RequestsBlock
 from anime_crawler.utils.bloomfilter import BloomFilter
+from anime_crawler.core.requests_generator import RequestsGenerator
 from collections import deque
 from requests import Request
+from anime_crawler.settings import REQUESTS_BATCH_SIZE
 
 
 class RequestsReposity:
@@ -9,6 +11,8 @@ class RequestsReposity:
         self._filter = BloomFilter()  # 去重用的布隆过滤器
         self._queue = deque()  # request对象列表
         self._count = 0  # 队列中的元素
+        self.requests_generator = RequestsGenerator()  # requests生成器
+        self.append(self.requests_generator.generator(REQUESTS_BATCH_SIZE*4))
 
     def pop(self) -> Request:
         '''
@@ -17,8 +21,11 @@ class RequestsReposity:
         Returns:
             Request: 一个Request对象，用于downloader
         '''
-        # TODO 先判断是否需要生成一批request对象
+        # 先判断是否需要生成一批request对象
+        if self._count < REQUESTS_BATCH_SIZE:
+            self.append(self.requests_generator.generator(REQUESTS_BATCH_SIZE))
 
+        self._count -= 1
         return self._queue.popleft()
 
     def append(self, requests_blcoks: RequestsBlock) -> bool:
@@ -31,10 +38,9 @@ class RequestsReposity:
         Returns:
             bool: 成功返回1否则为0
         '''
-        for request in requests_blcoks:
-            # TODO 感觉这里不对，应该是把网址放进去而不是把对象放进去
-            if not self._filter.find(request):
-                self._filter.add(request)
+        for request in requests_blcoks.pop():
+            if not self._filter.find(request.url):
+                self._filter.add(request.url)
                 self._queue.append(request)
                 self._count += 1
         return True
