@@ -2,14 +2,17 @@ from base64 import b64encode, b64decode
 
 
 class ImageItem:
-    def __init__(self, img: bytes = None, base64: str = None) -> None:
+    def __init__(self,  name: str, img: bytes = None, base64: str = None) -> None:
         '''
         构造函数
 
         Args:
+            name (str): 图像名字
             img (bytes, optional): 二进制格式的图像. Defaults to None.
             base64 (str, optional): 字符串格式的base64编码. Defaults to None.
+
         '''
+        self.name = name
         if img is not None:
             base64_data = b64encode(img)
             self.base64 = str(base64_data, 'utf-8')

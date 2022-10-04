@@ -22,7 +22,9 @@ class Downloader:
             response (response): 返回的response对象
         '''
 
-        self._result.append(ImageItem(img=response.content))
+        # TODO 关于名字的处理
+        self._result.append(ImageItem(name="{}.{}".format(*response.url.strip("/").split(".")[-2:]),
+                                      img=response.content))
         self._count -= 1
 
     @run_async_c(_callback)
@@ -34,6 +36,7 @@ class Downloader:
             request (request): request对象
         '''
 
+        # TODO 下载失败的错误
         for i in range(MAX_RETRY):  # 会重试几次
             try:
                 response = request(request_.method,
@@ -73,11 +76,15 @@ class Downloader:
         '''
         self._open = False
 
-    def pop(self):
+    def pop(self) -> ImageItem:
         '''
         获取一个item
 
         Returns:
             _type_: 返回下载的item
         '''
-        return self._result.popleft()
+        try:
+            # TODO 可能出现没有下载完就请求pop
+            return self._result.popleft()
+        except:
+            return None

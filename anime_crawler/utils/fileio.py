@@ -20,7 +20,7 @@ class FileIO:
         '''
         if not os.path.exists(self._path):
             os.makedirs(self._path)
-        while not os.path.exists(os.path.join(self._path, name)):
+        while os.path.exists(os.path.join(self._path, name)):
             # 保证当前图像名不被占用
             if("." in name):
                 name = "{}_.{}".format(*name.split("."), randint(1, 1e5))

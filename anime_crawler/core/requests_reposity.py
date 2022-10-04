@@ -12,6 +12,7 @@ class RequestsReposity:
         self._queue = deque()  # request对象列表
         self._count = 0  # 队列中的元素
         self.requests_generator = RequestsGenerator()  # requests生成器
+        # TODO 将这个目前使用返回值的东西修正成生成器
         self.append(self.requests_generator.generator(REQUESTS_BATCH_SIZE*4))
 
     def pop(self) -> Request:
@@ -41,6 +42,6 @@ class RequestsReposity:
         for request in requests_blcoks.pop():
             if not self._filter.find(request.url):
                 self._filter.add(request.url)
-                self._queue.append(request)
-                self._count += 1
+            self._queue.append(request)
+            self._count += 1
         return True
