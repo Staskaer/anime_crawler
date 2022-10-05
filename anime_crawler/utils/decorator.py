@@ -1,4 +1,7 @@
-import asyncio
+from concurrent.futures import ThreadPoolExecutor
+from anime_crawler.settings import MAX_CONCURRENT_REQUESTS
+
+pool = ThreadPoolExecutor(MAX_CONCURRENT_REQUESTS)
 
 
 def run_async_c(callback):
@@ -14,6 +17,7 @@ def run_async_c(callback):
                 out = func(*args, **kwargs)
                 callback(args[0], out)  # args[0]是self
                 return out
-            return asyncio.get_event_loop().run_in_executor(None, __exec)
+            global pool
+            return pool.submit(__exec)
         return wrapper
     return inner
