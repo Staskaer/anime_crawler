@@ -3,7 +3,7 @@ from requests import request, Request, Response
 from anime_crawler.utils.decorator import run_async_c
 from anime_crawler.utils.options import Options
 from anime_crawler.settings import MAX_CONCURRENT_REQUESTS, MAX_RETRY, TIMEOUT
-from .requests_reposity import RequestsReposity
+from anime_crawler.core.requests_reposity import RequestsReposity
 from collections import deque
 
 
@@ -23,7 +23,7 @@ class Downloader:
         '''
 
         # TODO 关于名字的处理
-        self._result.append(ImageItem(name="{}.{}".format(*response.url.strip("/").split(".")[-2:]),
+        self._result.append(ImageItem(name="{}.{}".format(*response.url.strip("/").replace("/", ".").split(".")[-2:]),
                                       img=response.content))
         self._count -= 1
 
@@ -35,7 +35,7 @@ class Downloader:
         Args:
             request (request): request对象
         '''
-
+        print(f"downloading {request_.url}，present downloads is {self._count}")
         # TODO 下载失败的错误
         for i in range(MAX_RETRY):  # 会重试几次
             try:
@@ -59,6 +59,9 @@ class Downloader:
         不断从requests库中取出requests对象直到填满并发数目
         '''
         while self._open and self._count < MAX_CONCURRENT_REQUESTS:
+            if(self._result.__len__() > 20):
+                print("now need to be release...")
+                break
             self._count += 1
             self._donwload(self._requests_reposity.pop())
 
@@ -83,6 +86,7 @@ class Downloader:
         Returns:
             _type_: 返回下载的item
         '''
+        # print(f"poping present items is {self._result.__len__()}")
         try:
             # TODO 可能出现没有下载完就请求pop
             return self._result.popleft()
