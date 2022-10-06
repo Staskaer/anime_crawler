@@ -5,7 +5,6 @@ from anime_crawler.utils.options import Options
 from anime_crawler.settings import MAX_CONCURRENT_REQUESTS, MAX_RETRY, TIMEOUT
 from anime_crawler.core.requests_repository import RequestsRepository
 from anime_crawler.core.imageio import ImageIO
-from collections import deque
 
 
 class Downloader:
