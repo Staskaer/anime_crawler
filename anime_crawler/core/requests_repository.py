@@ -42,6 +42,6 @@ class RequestsRepository:
         for request in requests_blcoks.pop():
             if not self._filter.find(request.url):
                 self._filter.add(request.url)
-            self._queue.append(request)
-            self._count += 1
+                self._queue.append(request)
+                self._count += 1
         return True
