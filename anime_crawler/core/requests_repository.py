@@ -6,7 +6,7 @@ from requests import Request
 from anime_crawler.settings import REQUESTS_BATCH_SIZE
 
 
-class RequestsReposity:
+class RequestsRepository:
     def __init__(self) -> None:
         self._filter = BloomFilter()  # 去重用的布隆过滤器
         self._queue = deque()  # request对象列表
@@ -42,6 +42,6 @@ class RequestsReposity:
         for request in requests_blcoks.pop():
             if not self._filter.find(request.url):
                 self._filter.add(request.url)
-            self._queue.append(request)
-            self._count += 1
+                self._queue.append(request)
+                self._count += 1
         return True
