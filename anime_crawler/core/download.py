@@ -3,16 +3,17 @@ from requests import request, Request, Response
 from anime_crawler.utils.decorator import run_async_c
 from anime_crawler.utils.options import Options
 from anime_crawler.settings import MAX_CONCURRENT_REQUESTS, MAX_RETRY, TIMEOUT
-from anime_crawler.core.requests_reposity import RequestsReposity
+from anime_crawler.core.requests_repository import RequestsRepository
+from anime_crawler.core.imageio import ImageIO
 from collections import deque
 
 
 class Downloader:
-    def __init__(self, requests_reposity: RequestsReposity, options: Options) -> None:
+    def __init__(self, requests_repository: RequestsRepository, imageio: ImageIO, options: Options) -> None:
         self._count = 0  # 计算并发数目
         self._open = True  # 开启下载器
-        self._requests_reposity = requests_reposity()  # requests库
-        self._result = deque()  # 存储处理结果的列表
+        self._requests_repository = requests_repository()  # requests库
+        self._imageio = imageio()  # image的接口
 
     def _callback(self, response: Response):
         '''
@@ -23,8 +24,9 @@ class Downloader:
         '''
 
         # TODO 关于名字的处理
-        self._result.append(ImageItem(name="{}.{}".format(*response.url.strip("/").replace("/", ".").split(".")[-2:]),
-                                      img=response.content))
+        name = "{}.{}".format(
+            *response.url.strip("/").replace("/", ".").split(".")[-2:])
+        self._imageio.add(ImageItem(name=name, img=response.content))
         self._count -= 1
 
     @run_async_c(_callback)
@@ -59,11 +61,9 @@ class Downloader:
         不断从requests库中取出requests对象直到填满并发数目
         '''
         while self._open and self._count < MAX_CONCURRENT_REQUESTS:
-            if(self._result.__len__() > 20):
-                print("now need to be release...")
-                break
+            # TODO 当generator生成速度不快的时候会导致阻塞
             self._count += 1
-            self._donwload(self._requests_reposity.pop())
+            self._donwload(self._requests_repository.pop())
 
     def open(self) -> None:
         '''
@@ -78,17 +78,3 @@ class Downloader:
         关闭downloader
         '''
         self._open = False
-
-    def pop(self) -> ImageItem:
-        '''
-        获取一个item
-
-        Returns:
-            _type_: 返回下载的item
-        '''
-        # print(f"poping present items is {self._result.__len__()}")
-        try:
-            # TODO 可能出现没有下载完就请求pop
-            return self._result.popleft()
-        except:
-            return None
