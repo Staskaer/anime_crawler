@@ -29,12 +29,15 @@ START_REQUESTS_BLOCKS = 4
 ##########BloomFilter类的配置项##########
 
 # 每个过滤器容量
-BLOOM_FILTER_CAPACITY = 2
+BLOOM_FILTER_CAPACITY = 1e5
 
 # 每个过滤器的错误率
 BLOOM_FILTER_ERROR = 0.001
 
 ##########ImageIO类的配置项##########
+
+# 开启redis数据库
+REDIS_ENABLE = False
 
 # redis数据库地址
 REDIS_ADDR = "127.0.0.1"
@@ -54,3 +57,5 @@ REDIS_TTL = 120
 # 文件图片的保存路径
 # FILE_PATH = "/mnt/hdd/images/"
 FILE_PATH = "D://animal/"
+
+# 是否在pop时启用去重(建议关闭)

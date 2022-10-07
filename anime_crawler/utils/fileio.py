@@ -1,6 +1,7 @@
 import os
 from anime_crawler.settings import FILE_PATH
-from random import randint
+from random import randint, choice
+from typing import Tuple
 
 
 class FileIO:
@@ -46,3 +47,15 @@ class FileIO:
                 # TODO 这是否是正确的字节流呢？
                 img = f.read()
             return img
+
+    def random_img(self) -> Tuple[str, bytes]:
+        '''
+        从文件中随机抽取一张图像并返回其名字和字节流
+
+        Returns:
+            Tuple[str, bytes]: 名字和字节流
+        '''
+
+        files = next(os.walk(self._path))[-1]
+        file = choice(files)
+        return (file, self.from_file(file))
