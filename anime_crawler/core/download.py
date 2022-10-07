@@ -2,9 +2,13 @@ from anime_crawler.utils.image_item import ImageItem
 from requests import request, Request, Response
 from anime_crawler.utils.decorator import run_async_c
 from anime_crawler.utils.options import Options
-from anime_crawler.settings import MAX_CONCURRENT_REQUESTS, MAX_RETRY, TIMEOUT
+from anime_crawler.settings import (MAX_CONCURRENT_REQUESTS,
+                                    MAX_RETRY,
+                                    TIMEOUT,
+                                    DELAY_AFTER_REQUEST)
 from anime_crawler.core.requests_repository import RequestsRepository
 from anime_crawler.core.imageio import ImageIO
+from time import sleep
 
 
 class Downloader:
@@ -31,6 +35,7 @@ class Downloader:
             *response.url.strip("/").replace("/", ".").split(".")[-2:])
         self._imageio.add(ImageItem(name=name, img=response.content))
         self._count -= 1
+        sleep(DELAY_AFTER_REQUEST)
 
     @run_async_c(_callback)
     def _donwload(self, request_: Request):
@@ -64,9 +69,12 @@ class Downloader:
         '''
         不断从requests库中取出requests对象直到填满并发数目
         '''
-        while self._open and self._count < MAX_CONCURRENT_REQUESTS:
+        add_count = 0
+        while self._open and self._count < MAX_CONCURRENT_REQUESTS and add_count < MAX_CONCURRENT_REQUESTS/2:
             # TODO 当generator生成速度不快的时候会导致此函数阻塞
+            # 目前的解决方案是一次调用有最多添加任务数目的限制
             self._count += 1
+            add_count += 1
             self._donwload(self._requests_repository.pop())
 
     def open(self) -> None:
