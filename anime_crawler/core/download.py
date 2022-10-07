@@ -14,13 +14,17 @@ class Downloader:
         self._requests_repository = requests_repository()  # requests库
         self._imageio = imageio()  # image的接口
 
-    def _callback(self, response: Response):
+    def _callback(self, response: Response) -> None:
         '''
         是download的回调函数
 
         Args:
             response (response): 返回的response对象
         '''
+        if response is None:
+            # TODO 关于超时请求的处理
+            print("超时")
+            return
 
         # TODO 关于名字的处理
         name = "{}.{}".format(
@@ -54,13 +58,14 @@ class Downloader:
                 return response
             except:
                 ...
+        return None
 
     def fill_download_queue(self) -> None:
         '''
         不断从requests库中取出requests对象直到填满并发数目
         '''
         while self._open and self._count < MAX_CONCURRENT_REQUESTS:
-            # TODO 当generator生成速度不快的时候会导致阻塞
+            # TODO 当generator生成速度不快的时候会导致此函数阻塞
             self._count += 1
             self._donwload(self._requests_repository.pop())
 
@@ -76,4 +81,5 @@ class Downloader:
         '''
         关闭downloader
         '''
+        # 关闭后不会影响到当前正在工作的下载任务
         self._open = False
