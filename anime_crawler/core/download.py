@@ -93,7 +93,12 @@ class Downloader:
             # 目前的解决方案是一次调用有最多添加任务数目的限制
             self._count += 1
             add_count += 1
-            self._donwload(self._requests_repository.pop())
+            try:
+                req = self._requests_repository.pop()
+            except:
+                print("repository empty and downloader closed...")
+                self.close()
+            self._donwload(req)
 
     def open(self) -> None:
         '''

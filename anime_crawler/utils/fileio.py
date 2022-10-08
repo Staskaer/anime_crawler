@@ -7,6 +7,8 @@ from typing import Tuple
 class FileIO:
     def __init__(self) -> None:
         self._path = FILE_PATH
+        if not os.path.exists(self._path):
+            os.makedirs(self._path)
 
     def to_file(self, img: bytes, name: str) -> bool:
         '''
@@ -19,8 +21,6 @@ class FileIO:
         Returns:
             bool: 是否写入成功
         '''
-        if not os.path.exists(self._path):
-            os.makedirs(self._path)
         while os.path.exists(os.path.join(self._path, name)):
             # 保证当前图像名不被占用
             if("." in name):
@@ -59,3 +59,27 @@ class FileIO:
         files = next(os.walk(self._path))[-1]
         file = choice(files)
         return (file, self.from_file(file))
+
+    def get_file_nums(self) -> int:
+        '''
+        获取目标目录下文件数目
+
+        Returns:
+            int: 数值
+        '''
+        # if os.path.exists(self._path):
+        return len(next(os.walk(self._path))[-1])
+        # return 0
+
+    def get_file_size(self) -> float:
+        '''
+        返回目录的空间大小
+
+        Returns:
+            float: 占用空间，单位MB
+        '''
+        size = 0
+        *_, files = next(os.walk(self._path))
+        for file in files:
+            size += os.path.getsize(os.path.join(self._path, file))
+        return size/1048576
