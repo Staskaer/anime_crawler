@@ -1,4 +1,5 @@
 from anime_crawler.utils.image_item import ImageItem
+from anime_crawler.utils.bloomfilter import BloomFilter
 from requests import request, Request, Response
 from anime_crawler.utils.decorator import run_async_c
 from anime_crawler.utils.options import Options
@@ -6,16 +7,33 @@ from anime_crawler.settings import (MAX_CONCURRENT_REQUESTS,
                                     MAX_RETRY,
                                     TIMEOUT,
                                     DELAY_AFTER_REQUEST)
+from anime_crawler.core.requests_generator import RequestsGenerator
 from anime_crawler.core.requests_repository import RequestsRepository
 from anime_crawler.core.imageio import ImageIO
 from time import sleep
 
 
 class Downloader:
-    def __init__(self, requests_repository: RequestsRepository, imageio: ImageIO, options: Options) -> None:
+    def __init__(self,
+                 requests_generator: RequestsGenerator = RequestsGenerator,
+                 requests_repository: RequestsRepository = RequestsRepository,
+                 imageio: ImageIO = ImageIO,
+                 filter: BloomFilter = BloomFilter,
+                 options: Options = None) -> None:
+        '''
+        使用requests_repository和imageio来构建downloader，其中requests_generator和filter用于构建requests_repository
+
+        Args:
+            requests_generator (RequestsGenerator, optional): requests_generator，用于生成requests_repository. Defaults to RequestsGenerator.
+            requests_repository (RequestsRepository, optional): requests_repository类. Defaults to RequestsRepository.
+            imageio (ImageIO, optional): ImageIO接口类. Defaults to ImageIO.
+            filter (BloomFilter, optional): 用于requests_repository的过滤器类. Defaults to BloomFilter.
+            options (Options, optional): 选项，暂时无用. Defaults to None.
+        '''
         self._count = 0  # 计算并发数目
         self._open = True  # 开启下载器
-        self._requests_repository = requests_repository()  # requests库
+        self._requests_repository = requests_repository(
+            requests_generator, filter)  # requests库
         self._imageio = imageio()  # image的接口
 
     def _callback(self, response: Response) -> None:

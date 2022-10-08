@@ -47,8 +47,6 @@ class ImageIO:
         Returns:
             ImageItem: 返回一个图像
         '''
-
-        # TODO 此部分没有测试，且存在阻塞的风险
         redis_times = 0
         if REDIS_ENABLE:
             print("pop from redis...")

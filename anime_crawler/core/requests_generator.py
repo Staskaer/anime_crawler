@@ -38,7 +38,7 @@ class RequestsGenerator:
 
     def generator(self, batch_size: int) -> RequestsBlock:
         generate = self.generator_middleware()
-        while self._size < REQUESTS_BATCH_SIZE:
+        while self._size < batch_size:
             self._size += 1
             self.requests_block.append(next(generate))
         self._size = 0
