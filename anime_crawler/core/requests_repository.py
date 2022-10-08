@@ -7,11 +7,20 @@ from anime_crawler.settings import REQUESTS_BATCH_SIZE
 
 
 class RequestsRepository:
-    def __init__(self) -> None:
-        self._filter = BloomFilter()  # 去重用的布隆过滤器
+    def __init__(self,
+                 requests_generator_: RequestsGenerator = RequestsGenerator,
+                 filter: BloomFilter = BloomFilter) -> None:
+        '''
+        构造函数，通过requests_generator和filter来构造出requests_repository
+
+        Args:
+            requests_generator_ (RequestsGenerator, optional): requests_generator，需要自己提供或使用默认. Defaults to RequestsGenerator.
+            filter (BloomFilter, optional): 过滤器，默认为布隆过滤器. Defaults to BloomFilter.
+        '''
+        self._filter = filter()  # 去重用的布隆过滤器
         self._queue = deque()  # request对象列表
         self._count = 0  # 队列中的元素
-        self.requests_generator = RequestsGenerator()  # requests生成器
+        self.requests_generator = requests_generator_()  # requests生成器
         # TODO 将这个目前使用返回值的东西修正成生成器
         self.append(self.requests_generator.generator(REQUESTS_BATCH_SIZE*4))
 
