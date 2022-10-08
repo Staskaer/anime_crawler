@@ -5,26 +5,22 @@
 # 下载器的最大并发数目
 MAX_CONCURRENT_REQUESTS = 16
 
-# 每个请求后的延迟时间(单位为秒)
+# 每个请求后的延迟时间(单位为秒)(建议不要太低)
 DELAY_AFTER_REQUEST = 1
 
-# 最多重试次数
+# 每个请求最多重试次数
 MAX_RETRY = 3
 
 # timeout
-TIMEOUT = 10
+TIMEOUT = 30
 
-##########RequestsGenerator类的配置项##########
+##########RequestsRepository类的配置项##########
 
 # Requests_block的大小
 REQUESTS_BATCH_SIZE = 16
 
 # 程序启动时初始生成的Requests_block数目
 START_REQUESTS_BLOCKS = 4
-
-
-##########RequestsRepository类的配置项##########
-
 
 ##########BloomFilter类的配置项##########
 
@@ -36,7 +32,7 @@ BLOOM_FILTER_ERROR = 0.001
 
 ##########ImageIO类的配置项##########
 
-# 开启redis数据库
+# 开启redis数据库(默认关闭，不建议开启捏)
 REDIS_ENABLE = False
 
 # redis数据库地址
@@ -51,7 +47,7 @@ REDIS_DB = 0
 # redis数据库的密码
 REDIS_PASSWD = "root"
 
-# 过期时间
+# 过期时间(秒)
 REDIS_TTL = 120
 
 # 文件图片的保存路径
@@ -59,3 +55,4 @@ REDIS_TTL = 120
 FILE_PATH = "D://animal/"
 
 # 是否在pop时启用去重(建议关闭)
+FILTER_ENABLE = False
