@@ -5,6 +5,7 @@ from anime_crawler.core.requests_repository import RequestsRepository
 from anime_crawler.utils.bloomfilter import BloomFilter
 from anime_crawler.utils.options import Options
 from anime_crawler.utils.stop_conditions import StopConditions
+from anime_crawler.utils.logger import Logger
 from anime_crawler.settings import *
 
 '''
@@ -28,6 +29,8 @@ class Engine:
                  downloader_: Downloader,
                  imageio_: ImageIO,
                  options_: Options) -> None:
+        self._logger = Logger("Engine")
+        self._logger.info("初始化Engine")
         self._downloader = downloader_(requests_generator=requests_generator_,
                                        requests_repository=requests_repository_,
                                        imageio=imageio_,
@@ -35,6 +38,7 @@ class Engine:
                                        options=options_)
         self._image_io = imageio_()
         self._stop_conditions = stop_conditions()
+        self._logger.info("Engine初始化完成")
 
     @classmethod
     def run():

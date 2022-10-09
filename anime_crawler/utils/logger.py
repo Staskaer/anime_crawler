@@ -16,15 +16,15 @@ class Logger:
         # 输出形如"2022-10-9 12:12:12 [INFO]-engine 信息内容"
 
     def info(self, msg: str) -> None:
-        if self._log_level >= log_dict["INFO"]:
+        if self._log_level <= log_dict["INFO"]:
             print(self._format.format(self._get_time(), "INFO", self._name, msg))
 
     def warning(self, msg: str) -> None:
-        if self._log_level >= log_dict["WARNING"]:
+        if self._log_level <= log_dict["WARNING"]:
             print(self._format.format(self._get_time(), "WARNING", self._name, msg))
 
     def error(self, msg: str) -> None:
-        if self._log_level >= log_dict["ERROR"]:
+        if self._log_level <= log_dict["ERROR"]:
             print(self._format.format(self._get_time(), "ERROR", self._name, msg))
 
     def _get_time(self) -> str:

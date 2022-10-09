@@ -35,14 +35,18 @@ class ImageIO:
         Returns:
             bool: 是否成功
         '''
-        self._logger("保存图像{}".format(item.name))
+        try:
+            self._logger.info("保存图像{}".format(item.name))
 
-        self._fileio.to_file(name=item.name, img=item.get_imgbytes())
+            self._fileio.to_file(name=item.name, img=item.get_imgbytes())
 
-        if REDIS_ENABLE:
-            return self._connection.set(item.name, item.get_imgbase64(), ex=REDIS_TTL)
-        else:
-            return 1
+            if REDIS_ENABLE:
+                return self._connection.set(item.name, item.get_imgbase64(), ex=REDIS_TTL)
+            else:
+                return 1
+        except Exception as e:
+            self._logger.error("保存{}失败，原因为{}".format(item.name, e))
+            return 0
 
     def pop(self) -> ImageItem:
         '''

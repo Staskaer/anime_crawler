@@ -17,7 +17,7 @@ def run_async_c(callback):
                 out = func(*args, **kwargs)
                 callback(args[0], out)  # args[0]是self
                 return out
-            global pool
+            pool
             return pool.submit(__exec)
         return wrapper
     return inner

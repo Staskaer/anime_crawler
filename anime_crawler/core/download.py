@@ -47,16 +47,19 @@ class Downloader:
         Args:
             response (response): 返回的response对象
         '''
-        if response is None:
-            # TODO 关于超时请求的处理
-            # self._logger.error("response is None")
-            return
-        # TODO 关于名字的处理
-        name = "{}.{}".format(
-            *response.url.strip("/").replace("/", ".").split(".")[-2:])
-        self._imageio.add(ImageItem(name=name, img=response.content))
-        self._count -= 1
-        sleep(DELAY_AFTER_REQUEST)
+        try:
+            if response is None:
+                # TODO 关于超时请求的处理
+                # self._logger.error("response is None")
+                return
+            # TODO 关于名字的处理
+            name = "{}.{}".format(
+                *response.url.strip("/").replace("/", ".").split(".")[-2:])
+            self._imageio.add(ImageItem(name=name, img=response.content))
+            self._count -= 1
+            sleep(DELAY_AFTER_REQUEST)
+        except Exception as e:
+            self._logger.error("处理时出错，疑似兼容性bug，错误信息：{}".format(e))
 
     @run_async_c(_callback)
     def _donwload(self, request_: Request):
@@ -84,6 +87,7 @@ class Downloader:
                 return response
             except:
                 self._logger.warning("下载{}失败，重试第{}次".format(request_.url, i+1))
+                ...
         self._logger.error("下载{}失败，放弃下载".format(request_.url))
         return None
 

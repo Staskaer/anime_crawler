@@ -2,7 +2,7 @@
 
 ##########全局配置##########
 
-# 日志等级 "INFO", "WARNING", "ERROR"
+# 日志等级 "INFO", "WARNING", "ERROR"。建议为INFO，后两者信息太烧了。
 LOG_LEVEL = "INFO"
 
 
