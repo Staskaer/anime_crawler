@@ -10,6 +10,7 @@ from anime_crawler.settings import (MAX_CONCURRENT_REQUESTS,
 from anime_crawler.core.requests_generator import RequestsGenerator
 from anime_crawler.core.requests_repository import RequestsRepository
 from anime_crawler.core.imageio import ImageIO
+from anime_crawler.utils.logger import Logger
 from time import sleep
 
 
@@ -30,11 +31,14 @@ class Downloader:
             filter (BloomFilter, optional): 用于requests_repository的过滤器类. Defaults to BloomFilter.
             options (Options, optional): 选项，暂时无用. Defaults to None.
         '''
+        self._logger = Logger("Downloader")
+        self._logger.info("初始化Downloader")
         self._count = 0  # 计算并发数目
         self._open = True  # 开启下载器
         self._requests_repository = requests_repository(
             requests_generator, filter)  # requests库
         self._imageio = imageio()  # image的接口
+        self._logger.info("Downloader初始化完成")
 
     def _callback(self, response: Response) -> None:
         '''
@@ -45,9 +49,8 @@ class Downloader:
         '''
         if response is None:
             # TODO 关于超时请求的处理
-            print("超时")
+            # self._logger.error("response is None")
             return
-
         # TODO 关于名字的处理
         name = "{}.{}".format(
             *response.url.strip("/").replace("/", ".").split(".")[-2:])
@@ -63,7 +66,7 @@ class Downloader:
         Args:
             request (request): request对象
         '''
-        print(f"downloading {request_.url}，present downloads is {self._count}")
+        self._logger.info("开始下载{}，目前并发数目为{}".format(request_.url, self._count))
         # TODO 下载失败的错误
         for i in range(MAX_RETRY):  # 会重试几次
             try:
@@ -80,7 +83,8 @@ class Downloader:
                                    )
                 return response
             except:
-                ...
+                self._logger.warning("下载{}失败，重试第{}次".format(request_.url, i+1))
+        self._logger.error("下载{}失败，放弃下载".format(request_.url))
         return None
 
     def fill_download_queue(self) -> None:
@@ -96,7 +100,8 @@ class Downloader:
             try:
                 req = self._requests_repository.pop()
             except:
-                print("repository empty and downloader closed...")
+                self._logger.warning(
+                    "requests_repository为空，关闭downloader，等待下一次开启")
                 self.close()
             self._donwload(req)
 
@@ -105,6 +110,7 @@ class Downloader:
         开启downloader
         '''
         if self._open != True:
+            self._logger.info("downloader已经开启")
             self._open = True
             self.fill_download_queue()
 
@@ -113,4 +119,5 @@ class Downloader:
         关闭downloader
         '''
         # 关闭后不会影响到当前正在工作的下载任务
+        self._logger.info("downloader已经关闭")
         self._open = False
