@@ -9,10 +9,13 @@ from anime_crawler.settings import (REDIS_ADDR,
 from anime_crawler.utils.image_item import ImageItem
 from anime_crawler.utils.bloomfilter import BloomFilter
 from anime_crawler.utils.fileio import FileIO
+from anime_crawler.utils.logger import Logger
 
 
 class ImageIO:
     def __init__(self) -> None:
+        self._logger = Logger("ImageIO")
+        self._logger.info("初始化ImageIO")
         if REDIS_ENABLE:
             # redis连接
             self._connection = Redis(
@@ -20,6 +23,7 @@ class ImageIO:
         if FILTER_ENABLE:
             self._bloom_filter = BloomFilter()  # 用于pop过滤
         self._fileio = FileIO()  # 文件读取接口
+        self._logger.info("ImageIO初始化完成")
 
     def add(self, item: ImageItem) -> bool:
         '''
@@ -31,14 +35,18 @@ class ImageIO:
         Returns:
             bool: 是否成功
         '''
-        print(f"parsing {item.name}")
+        try:
+            self._logger.info("保存图像{}".format(item.name))
 
-        self._fileio.to_file(name=item.name, img=item.get_imgbytes())
+            self._fileio.to_file(name=item.name, img=item.get_imgbytes())
 
-        if REDIS_ENABLE:
-            return self._connection.set(item.name, item.get_imgbase64(), ex=REDIS_TTL)
-        else:
-            return 1
+            if REDIS_ENABLE:
+                return self._connection.set(item.name, item.get_imgbase64(), ex=REDIS_TTL)
+            else:
+                return 1
+        except Exception as e:
+            self._logger.error("保存{}失败，原因为{}".format(item.name, e))
+            return 0
 
     def pop(self) -> ImageItem:
         '''
@@ -49,7 +57,7 @@ class ImageIO:
         '''
         redis_times = 0
         if REDIS_ENABLE:
-            print("pop from redis...")
+            self._logger.info("尝试从redis数据库中pop图像")
             while 1:
                 # 数目比较少或多次重复就的时候就break掉，防止阻塞
                 if self._connection.dbsize()-redis_times < 10 or redis_times > 3:
@@ -67,7 +75,7 @@ class ImageIO:
                     return ImageItem(key, base64=value.decode("utf-8"))
 
         # 如果缓存处失败，就从文件中读取
-        print("pop from file...")
+        self._logger.info("尝试从文件中pop图像")
         while 1:
             name, img_b = self._fileio.random_img()
             if FILTER_ENABLE and not self._bloom_filter.find(name):

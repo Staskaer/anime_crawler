@@ -4,6 +4,7 @@ from anime_crawler.core.requests_generator import RequestsGenerator
 from collections import deque
 from requests import Request
 from anime_crawler.settings import REQUESTS_BATCH_SIZE
+from anime_crawler.utils.logger import Logger
 
 
 class RequestsRepository:
@@ -17,12 +18,15 @@ class RequestsRepository:
             requests_generator_ (RequestsGenerator, optional): requests_generator，需要自己提供或使用默认. Defaults to RequestsGenerator.
             filter (BloomFilter, optional): 过滤器，默认为布隆过滤器. Defaults to BloomFilter.
         '''
+        self._logger = Logger("RequestsRepository")
+        self._logger.info("初始化RequestsRepository")
         self._filter = filter()  # 去重用的布隆过滤器
         self._queue = deque()  # request对象列表
         self._count = 0  # 队列中的元素
         self.requests_generator = requests_generator_()  # requests生成器
         # TODO 将这个目前使用返回值的东西修正成生成器
         self.append(self.requests_generator.generator(REQUESTS_BATCH_SIZE*4))
+        self._logger.info("RequestsRepository初始化完成")
 
     def pop(self) -> Request:
         '''
