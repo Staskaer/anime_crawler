@@ -1,5 +1,11 @@
 # anime_crawler的配置文件
 
+##########全局配置##########
+
+# 日志等级 "INFO", "WARNING", "ERROR"。建议为INFO，后两者信息太烧了。
+LOG_LEVEL = "INFO"
+
+
 ##########Downloader类的配置项##########
 
 # 下载器的最大并发数目

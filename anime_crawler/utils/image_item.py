@@ -1,4 +1,5 @@
 from base64 import b64encode, b64decode
+from anime_crawler.settings import REDIS_ENABLE
 
 
 class ImageItem:
@@ -14,13 +15,15 @@ class ImageItem:
         '''
         self.name = name
         if img is not None:
-            base64_data = b64encode(img)
-            self.base64 = str(base64_data, 'utf-8')
+            if REDIS_ENABLE:
+                base64_data = b64encode(img)
+                self.base64 = str(base64_data, 'utf-8')
             self.imgbytes = img
-        elif base64 is not None:
-            self.imgbytes = b64decode(base64)
-            self.base64 = base64
-        else:
+        if REDIS_ENABLE:
+            if base64 is not None:
+                self.imgbytes = b64decode(base64)
+                self.base64 = base64
+        if img is None and base64 is None:
             self.imgbytes = None
             self.base64 = None
 
@@ -31,9 +34,10 @@ class ImageItem:
         Args:
             img (bytes): 二进制格式的图像
         '''
-        base64_data = b64encode(img)
-        self.base64 = str(base64_data, 'utf-8')
         self.imgbytes = img
+        if REDIS_ENABLE:
+            base64_data = b64encode(img)
+            self.base64 = str(base64_data, 'utf-8')
 
     def add_base64(self, base64: str) -> None:
         '''
@@ -42,7 +46,8 @@ class ImageItem:
         Args:
             base64 (str): 字符串的base64编码
         '''
-        self.base64 = base64
+        if REDIS_ENABLE:
+            self.base64 = base64
         self.imgbytes = b64decode(base64)
 
     def get_imgbytes(self) -> bytes:
@@ -61,4 +66,6 @@ class ImageItem:
         Returns:
             str: 图像的base64编码
         '''
-        return self.base64
+        if REDIS_ENABLE:
+            return self.base64
+        raise Exception("Redis is not enable")
