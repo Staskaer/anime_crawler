@@ -59,7 +59,7 @@ class Downloader:
             self._count -= 1
             sleep(DELAY_AFTER_REQUEST)
         except Exception as e:
-            self._logger.error("处理时出错，疑似兼容性bug，错误信息：{}".format(e))
+            self._logger.error("处理时出错，疑似兼容性bug，错误信息:{}".format(e))
 
     @run_async_c(_callback)
     def _donwload(self, request_: Request):
@@ -87,7 +87,7 @@ class Downloader:
                 return response
             except:
                 self._logger.warning("下载{}失败，重试第{}次".format(request_.url, i+1))
-                ...
+
         self._logger.error("下载{}失败，放弃下载".format(request_.url))
         return None
 
@@ -107,7 +107,9 @@ class Downloader:
                 self._logger.warning(
                     "requests_repository为空，关闭downloader，等待下一次开启")
                 self.close()
+                return False
             self._donwload(req)
+        return True
 
     def open(self) -> None:
         '''

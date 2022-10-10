@@ -1,10 +1,10 @@
 from anime_crawler.utils.fileio import FileIO
-from datetime import datetime, timedelta
+from datetime import datetime
 from anime_crawler.utils.logger import Logger
 
 
 class StopConditions:
-    def __init__(self,  circle_: bool = True, fileio_: FileIO = FileIO) -> None:
+    def __init__(self,   fileio_: FileIO = FileIO) -> None:
         self._logger = Logger("StopConditions")
         self._logger.info("初始化StopConditions")
         self._lasttingtime = None  # 持续时间(min):int
@@ -12,7 +12,7 @@ class StopConditions:
         self._nums = None  # 下载的数目
         self._timerange = None  # 给定运行时间
 
-        self._circle = circle_  # 是否重复执行
+        self._circle = False  # 是否重复执行
         self._fileio = fileio_()  # FileIO接口
 
         self.init()
@@ -25,8 +25,8 @@ class StopConditions:
         '''
         self._logger.warning("StopConditions正在装载初始值")
         self._start_time = datetime.now()
-        self._start_nums = self._fileio.get_nums()
-        self._start_size = self._fileio.get_size()
+        self._start_nums = self._fileio.get_file_nums()
+        self._start_size = self._fileio.get_file_size()
         self._logger.warning("StopConditions初始值装载完成")
 
     def valid(self) -> bool:
@@ -34,46 +34,26 @@ class StopConditions:
         判断是否满足停止条件
 
         Returns:
-            bool: 是否满足停止条件
+            bool: 是否满足停止条件，返回True为可以继续执行，否则返回False
         '''
 
-        if self._circle is True:
-            if self._lasttingtime is not None:
-                if self._calculate_delta_time() >= self._lasttingtime:
-                    self._logger.warning("已达到持续时间条件，准备关闭downloader")
-                    return False
-            if self._size_of_pics is not None:
-                if self._calculate_delta_size() >= self._size_of_pics:
-                    self._logger.warning("已达到占用空间条件，准备关闭downloader")
-                    return False
-            if self._nums is not None:
-                if self._calculate_delta_nums() >= self._nums:
-                    self._logger.warning("已达到下载数目条件，准备关闭downloader")
-                    return False
-            if self._timerange is not None:
-                if not self._is_in_time(datetime.now()):
-                    self._logger.warning("已达到给定运行时间条件，准备关闭downloader")
-                    return False
-            return True
-        else:
-            if self._lasttingtime is not None:
-                if self._calculate_delta_time() >= self._lasttingtime:
-                    self._logger.warning("已达到持续时间条件，准备关闭downloader")
-                    # TODO 定义异常类
-                    raise StopIteration
-            if self._size_of_pics is not None:
-                if self._calculate_delta_size() >= self._size_of_pics:
-                    self._logger.warning("已达到占用空间条件，准备关闭downloader")
-                    raise StopIteration
-            if self._nums is not None:
-                if self._calculate_delta_nums() >= self._nums:
-                    self._logger.warning("已达到下载数目条件，准备关闭downloader")
-                    raise StopIteration
-            if self._timerange is not None:
-                if not self._is_in_time(datetime.now()):
-                    self._logger.warning("已达到给定运行时间条件，准备关闭downloader")
-                    raise StopIteration
-            return True
+        if self._lasttingtime is not None:
+            if self._calculate_delta_time() >= self._lasttingtime:
+                self._logger.warning("已达到持续时间条件，准备关闭downloader")
+                return False
+        if self._size_of_pics is not None:
+            if self._calculate_delta_size() >= self._size_of_pics:
+                self._logger.warning("已达到占用空间条件，准备关闭downloader")
+                return False
+        if self._nums is not None:
+            if self._calculate_delta_nums() >= self._nums:
+                self._logger.warning("已达到下载数目条件，准备关闭downloader")
+                return False
+        if self._timerange is not None:
+            if not self._is_in_time(datetime.now()):
+                self._logger.warning("已达到给定运行时间条件，准备关闭downloader")
+                return False
+        return True
 
     def add_stop_condition(self,
                            lastingtime: float = None,
@@ -105,15 +85,20 @@ class StopConditions:
             self._nums = nums
         if timerange is not None:
             try:
-                start_time, end_time = timerange.split('-')
+                self._timerange = True  # 非None即可
+                start_time, end_time = [datetime.strptime(
+                    i, '%H:%M') for i in timerange.split('-')]
 
                 # 这里用了一个闭包来实现
                 def _is_in_time(starttime, endtime):
                     def comp(time: datetime) -> bool:
-                        datestr = "{}-{}".format(time.hour, time.minute)
-                        return starttime <= datestr <= endtime
+                        if starttime.hour*60+starttime.minute <= time.hour*60+time.minute <= endtime.hour*60+endtime.minute:
+                            return True
+                        return False
                     return comp
                 self._is_in_time = _is_in_time(start_time, end_time)
+                self._circle = True
+                self._starttime_task = start_time
             except ValueError:
                 print('timerange参数错误，正确格式应该形如"10:00-14:00"')
 
@@ -132,6 +117,7 @@ class StopConditions:
             self._nums = None
         elif condition == 'timerange':
             self._timerange = None
+            self._circle = False
         else:
             raise ValueError('Invalid stop condition')
 
@@ -151,7 +137,7 @@ class StopConditions:
         Returns:
             float: 返回差值，单位为MB
         '''
-        return (self._fileio.get_size() - self._start_size)/1024/1024
+        return (self._fileio.get_file_size() - self._start_size)
 
     def _calculate_delta_nums(self) -> int:
         '''
@@ -160,4 +146,29 @@ class StopConditions:
         Returns:
             int: 返回差值
         '''
-        return self._fileio.get_nums() - self._start_nums
+        return self._fileio.get_file_nums() - self._start_nums
+
+    def get_circle(self) -> bool:
+        '''
+        获取当前循环标志位
+
+        Returns:
+            int: 返回当前循环标志位
+        '''
+        return self._circle
+
+    def get_sleep_time(self) -> float:
+        '''
+        获取应该休眠的时间
+
+        Returns:
+            float: 返回休眠时间
+        '''
+        hour_delta = self._starttime_task.hour - datetime.now().hour
+        min_delta = self._starttime_task.minute - datetime.now().minute
+        if min_delta < 0:
+            min_delta += 60
+            hour_delta -= 1
+        if hour_delta < 0:
+            hour_delta += 24
+        return (hour_delta*60+min_delta)*60
