@@ -27,5 +27,6 @@ class Logger:
         if self._log_level <= log_dict["ERROR"]:
             print(self._format.format(self._get_time(), "ERROR", self._name, msg))
 
-    def _get_time(self) -> str:
+    @staticmethod
+    def _get_time() -> str:
         return strftime("%Y-%m-%d %H:%M:%S", localtime())

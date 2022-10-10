@@ -51,9 +51,7 @@ class Engine:
             downloader: Downloader = Downloader,
             imageio: ImageIO = ImageIO,
             options: Options = Options) -> Any:
-        '''
-        用于启动爬虫的类方法，用于创建Engine对象并启动爬虫
-        '''
+        '''用于启动爬虫的类方法，用于创建Engine对象并启动爬虫'''
         if generator is None:
             raise ValueError("generator参数不能为空")
         if stop_conditions is None:
@@ -71,9 +69,7 @@ class Engine:
 
     @classmethod
     def run_default(cls) -> Any:
-        '''
-        启用默认的爬虫类
-        '''
+        '''启用默认的爬虫类'''
         cls.run(RequestsGenerator, StopConditions(), RequestsRepository,
                 BloomFilter, Downloader, ImageIO, Options)
 

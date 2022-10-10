@@ -20,9 +20,7 @@ class StopConditions:
         self._logger.info("StopConditions初始化完成")
 
     def init(self) -> None:
-        '''
-        初始化，用于获取初始值，每次重启后都要先调用这个
-        '''
+        '''初始化，用于获取初始值，每次重启后都要先调用这个'''
         self._logger.warning("StopConditions正在装载初始值")
         self._start_time = datetime.now()
         self._start_nums = self._fileio.get_file_nums()
@@ -137,7 +135,7 @@ class StopConditions:
         Returns:
             float: 返回差值，单位为MB
         '''
-        return (self._fileio.get_file_size() - self._start_size)
+        return self._fileio.get_file_size() - self._start_size
 
     def _calculate_delta_nums(self) -> int:
         '''

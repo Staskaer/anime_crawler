@@ -34,7 +34,6 @@ class ImageItem:
         Args:
             img (bytes): 二进制格式的图像
         '''
-
         self.imgbytes = img
         if REDIS_ENABLE:
             base64_data = b64encode(img)

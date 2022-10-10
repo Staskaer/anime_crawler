@@ -42,8 +42,7 @@ class ImageIO:
 
             if REDIS_ENABLE:
                 return self._connection.set(item.name, item.get_imgbase64(), ex=REDIS_TTL)
-            else:
-                return 1
+            return 1
         except Exception as e:
             self._logger.error("保存{}失败，原因为{}".format(item.name, e))
             return 0
