@@ -23,15 +23,15 @@
 
 接下来，上场的这位更是重量级！她就是`RequestsRepository`，没错，就是她负责调用`RequestsGenerator`来生成请求，为了避免重复，她还使用了`BloomFilter`进行去重！**她的作用就是对请求进行去重，然后每次被调用的时候还会吐出一个没有重复的请求出来**！真不错，毕竟，这位先生，你也不希望你爬下来的结果查重率伯分之一伯吧~
 
-然后然后，最最重要的`Downloader`就要出场啦！**她使用线程池来约束线程，采用多个线程同时下载的方式完成下载**~，而且使用的库是`requests`库哦！每个`ImageItem`先生会小心地装好一条数据然后进入`DownloaderMiddleware`被进行严格的身份审查(注:目前没有)，审查通过了才能被`ImageIO`小姐好好的保存起来哦~
+然后然后，最最重要的`Downloader`就要出场啦！**她使用线程池来约束线程，采用多个线程同时下载的方式完成下载**\~，而且使用的库是`requests`库哦！每个`ImageItem`先生会小心地装好一条数据然后进入`DownloaderMiddleware`被进行严格的身份审查(注:目前没有)，审查通过了才能被`ImageIO`小姐好好的保存起来哦~
 
 是不是觉得`Downloader`小姐非常辛苦呢~没关系的！`StopConditions`会成为她贴心的小闹钟！会提醒`Downloader`小姐可以去休息啦，是不是非常贴心呢~
 
-欸欸欸欸，`ImageIO`小姐，你干嘛~。咳咳，`ImageIO`小姐也是非常辛苦的，**她负责从`ImageItem`先生手上接受数据，然后好好的存放进Redis或者是磁盘中哦**，这可不是一个轻松的活，让我们再次感谢`ImageIO`小姐！哦对了，**`ImageIO`小姐有时还需要把磁盘或Redis中的数据搬出来递给`ImageServer`小姐哦**~
+欸欸欸欸，`ImageIO`小姐，你干嘛\~。咳咳，`ImageIO`小姐也是非常辛苦的，**她负责从`ImageItem`先生手上接受数据，然后好好的存放进Redis或者是磁盘中哦**，这可不是一个轻松的活，让我们再次感谢`ImageIO`小姐！哦对了，**`ImageIO`小姐有时还需要把磁盘或Redis中的数据搬出来递给`ImageServer`小姐哦**\~
 
-嘿嘿嘿~，哎呀！对了，忘记介绍最最最最重要的`Engine`小姐了T_T，希望`Engine`小姐不要生气捏~(￣▽￣)~*。**`Engine`小姐其实就负责的就是协调小闹钟`StopConditions`、`Downloader`小姐哦，另外还需要管理不存在的`ImageServer`小姐**~。哼哼哼，感觉也没什么大不了的嘛，感觉我上我也行(づ￣ 3￣)づ。
+嘿嘿嘿~，哎呀！对了，忘记介绍最最最最重要的`Engine`小姐了T_T，希望`Engine`小姐不要生气捏\~(￣▽￣)\~*。**`Engine`小姐其实就负责的就是协调小闹钟`StopConditions`、`Downloader`小姐哦，另外还需要管理不存在的`ImageServer`小姐**\~。哼哼哼，感觉也没什么大不了的嘛，感觉我上我也行(づ￣ 3￣)づ。
 
-`ImageServer`和`ImageClient`是一对双子哦~，**`ImageClient`妹妹向`ImageServer`姐姐发起撒娇请求后，姐姐很快就会满足她的！但目前唯一的遗憾是她们都不存在哦**~T_T(还不是因为我不努力)
+`ImageServer`和`ImageClient`是一对双子哦\~，**`ImageClient`妹妹向`ImageServer`姐姐发起撒娇请求后，姐姐很快就会满足她的！但目前唯一的遗憾是她们都不存在哦**\~T_T(还不是因为我不努力)
 
 呜~呼~，终于介绍完了，插会腰┑(￣Д ￣)┍。
 
