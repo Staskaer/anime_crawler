@@ -1,45 +1,137 @@
-#### 这是一个基于requests库的多线程二刺螈图片爬虫框架哦！当然也不局限于二刺螈图片呢，但是记得只能用于图片T_T！
+#### 这是一个基于requests库的轻量级多线程~~二刺螈~~图片爬虫框架
 
 ---
 
-## 这里是说明哦
+<div align="center">
+  <a href="docs/二刺螈README.md"> 二次元版本的文档(还在施工) </a>
+</div>
 
-一般我们写一个图片爬虫呢，~~都是为了涩涩~~，肯定都需要先非常努力的来找到图像所在的目录，然后从里面把图像的链接提取出来！提取出来之后呢，随便从网上缝合一段代码，嘿嘿嘿，大功告成啦\\(@^0^@)/！但是有时候，我们缝合的下载部分使用了各种异步，作为大笨蛋，我肯定是看不懂的啦哈哈\~，但是如果只使用requests库呢，又会导致很严重的阻塞了ψ(._. )>！
+## 说明
 
-还有还有，如果想要把爬虫小姐部署在arm服务器上，很多讨人厌的依赖可能都装不上，真实太可恶了╰(艹皿艹 )！这还不算呢，我们还需要定时把爬虫小姐唤醒，让她工作一会或者是指派一定工作量，完成了才能休息哦(๐॔˃̶ᗜ˂̶๐॓)！我想想，对了，我们还需要一个客户端，来让我们来好好地康康爬虫小姐的工作结果！嘿嘿嘿嘿嘿嘿🤤🤤🤤🤤\~
+一般而言，当大量爬取图片的时候，我们都会经过两步：
 
-所以所以，咱来总结一下就是：**基于requests库、多线程下载、依赖少、定义爬取足够简单、配置灵活、能够定时启停并且有每次运行的停止条件、集成redis数据库、有客户端**(这个还还还还还还没做呢T_T)**针对二刺螈图片进行高速下载的爬虫**！~~(太棒了，这么多定语，越多肯定越厉害！好耶！)~~
+- 先通过某个请求获取到一批图像的原始链接
+- 然后逐个解析出这些链接并下载原始图像
+
+相对而言，第一步是与网站页面强相关的，提取页面信息的方法随着网页布局的变化而改变；但第二步往往是只需要简单地发送第一步构造出来的请求然后接收数据即可。
+
+**因此，基于上述原则，其实就可以构建出一个图像下载框架了————用户负责编写提取页面信息的逻辑，下载工作由框架完成，再顺便往里面填充一些别的功能。**
+
+另外，我还希望这个爬虫框架能够在一些arm-linux设备上运行(这也是我的需求)，而这些设备一般都是些电视盒子刷固件或者是广告机拆机之类的，其性能差，同时很多软件包装不上或者是很麻烦。所以我也希望这个爬虫框架依赖足够少、运行时占用也能够尽量小但依然能够保持高效的下载速度。
+
+除此之外，由于其运行在arm设备上，我不会一直监控它，所以也希望它能实现爬取一定数量或一定时间后自动停止，同时能实现在每天某个时间段自动开启或停止。当然，如果它能提供web交互选图功能就更好了。
+
+所以最终的目标是实现一个**基于requests库、能够多线程下载、依赖少、定义爬取足够简单、配置灵活、能够定时启停并且有每次运行的停止条件、集成redis数据库、有客户端**的图像爬取框架。~~感觉主要还是针对二次元图片进行下载~~
+
+### 简单的使用说明
+
+- 首先，先将此仓库的main分支下载到本地
+
+```
+git clone https://github.com/ppxxxg22/anime_crawler.git
+```
+
+- 在目录下有一个`demo.py`文件，里面给出了运行此框架的基本步骤
+
+```python
+
+# 导入engine和stopconditions
+from anime_crawler import StopConditions, Engine
+# 导入自带的RequestsGenerator
+from anime_crawler import RequestsGenerator
+
+# 实例化一个停止条件
+a = StopConditions()
+# 添加停止条件，这里是爪巴取10分钟后停止
+a.add_stop_condition(lastingtime=10)
+# 开始爪巴
+Engine.run(RequestsGenerator, a)
+
+```
+
+> 简单概括就是:
+> 
+> 1. 给出能够生成需要爬取的图像的`Request`请求的类(需要依据自定义爬取网站而定)
+> 
+> 2. 定义爬虫停止条件(框架自带，只需要填写参数)
+> 
+> 3. 运行
+>
+> 是不是很简单呢
+
+其中源文件中提供了一个爬取并下载`https://api.lolicon.app/#/setu`中图片的`RequestsGenerator`类，假如你不是爬这个网站，那么你需要自定义`RequestsGenerator`类，当然也是很简单的，只需要让他每次生成一些`Request`请求就可以了。
+
+关于爬虫的配置项可以在`anime_crawler/settings.py`中进行设置，主要配置有并发数目、下载地址、是否启用Redis等等，可以根据自己需求配置。
+
+另外，本框架中基本上所有的类都支持自定义更换，只需要在`Engine.run`时传入对应需要更换的模块即可，这部分可以参阅后面。
+
+### 自定义爬取对象(高级的使用说明)
+
+- 在目录下有一个`demo_advanced.py`文件，里面给出了关于自定义爬取对象的部分(下面截取主要部分用于简述)
+
+```python
+
+from anime_crawler import RequestsGenerator, StopConditions, Engine
+from requests import Request
 
 
-## 这里是架构哦
+# 需要继承自RequestsGenerator并重写usr_generator函数即可
+class myGnerator(RequestsGenerator):
+    def __init__(self) -> None:
+        super().__init__()
 
-一口气说了这么多，差点没传过来气！好叭，我们先来看一下架构图吧\~
+    def usr_generator(self) -> Request:
+        '''
+        这是一个生成器，用于生成Request对象
+        '''
+
+        # 这里放你的爬取逻辑，每次yield一个Request对象
+        yield Request("get", "https://www.baidu.com")
+
+    def generator_middleware(self) -> Request:
+        '''
+        这是中间键，用于预处理Request对象，比如添加headers，cookies等
+        如果你不需要这个功能，可以不修改这个函数
+        这个函数默认的功能是什么都不做，像下面这样
+        '''
+        yield from self.usr_generator()
+
+
+if __name__ == "__main__":
+    # 运行方法和之前一致
+    a = StopConditions()
+    a.add_stop_condition(lastingtime=10)
+    Engine.run(myGnerator, a)
+
+```
+
+想要爬取一个网站，只需要定义自己的请求生成类，需要继承自`anime_crawler.RequestsGenerator`，然后重写`usr_generator`函数，并在这个函数中定义自己的爬取逻辑即可。
+
+另外一个函数是`generator_middleware`，可以看成是中间键，可以用于对Request对象添加headers，cookies等，默认这个函数什么也不做。
+
+定义完成自己的爬取逻辑后，还是像之前一样运行爬虫。
+
+### 架构信息
+
+**如果你感兴趣可以看一下本框架架构**
+
+架构图如下
 
 ![](docs/imgs/架构图.png)
 
-好怪哦，有点看不懂，那我就来介绍一下吧，真是没办法呢。什么？才..才不是想要主动介绍呢，哼(/ω＼\*)。**当...当然，如果你实在是不想听的话，可以直接扒拉到下面去看使用方法哦**\~
+下面来对这些模块做一些说明
 
-- 当当当当，首先是`RequestsGenerator`！这个模块可重要啦！它的任务就是源源不断地生成`Request`请求，如果你想要**自定义爪巴目标**的话，重写的也就是这个东西哦，但是千万记得要遵守规范！**它每次被调用都会生成一个`RequestsBlock`，其实就是好多`Request`组成的小组啦**！默认提供的会生成百合图片的`Request`，不过总数比较少，只有几百张哦，很快就爪巴完了！
+- `RequestsGenerator`: 这个就是用户自定义爬取内容时需要修改的东西，每次调用会生成由多个`Request`请求组成的`RequestsBlock`。源文件中提供了一个爬取并下载`https://api.lolicon.app/#/setu`中图片的默认配置。
 
-- 接下来，上场的这位更是重量级！她就是`RequestsRepository`，没错，就是她负责调用`RequestsGenerator`来生成请求，为了避免重复，她还使用了`BloomFilter`进行去重！**她的作用就是对请求进行去重，然后每次被调用的时候还会吐出一个没有重复的请求出来**！真不错，毕竟，这位先生，你也不希望你爬下来的结果查重率伯分之一伯吧\~
+- `RequestsRepository`: 存储`Request`的仓库，内置`BloomFilter`。当剩余可用`Request`请求不多的时候会调用`RequestsGenerator`生成一批`Request`请求。
 
-- 然后然后，最最重要的`Downloader`就要出场啦！**她使用线程池来约束线程，采用多个线程同时下载的方式完成下载**\~，而且使用的库是`requests`库哦！每个`ImageItem`先生会小心地装好一条数据然后进入`DownloaderMiddleware`被进行严格的身份审查(注:目前没有)，审查通过了才能被`ImageIO`小姐好好的保存起来哦\~
+- `Downloader`: 多线程图像下载器，使用线程池进行管理管理，每次从`RequestsRepository`中pop一个`Request`请求并进行下载，完成后会调用`ImageIO`将图像进行存储。
 
-- 是不是觉得`Downloader`小姐非常辛苦呢\~没关系的！`StopConditions`会成为她贴心的小闹钟！会提醒`Downloader`小姐可以去休息啦，是不是非常贴心呢\~
+- `StopConditions`: 下载器停止条件，负责监测当前次下载器是否到达停止条件，也会在到达启动条件时启动下载器。目前支持：当前次下载数限制、当前次下载大小限制、当前次持续时间限制和每天固定时间段启停运行条件。
 
-- 欸欸欸欸，`ImageIO`小姐，你干嘛\~。咳咳，`ImageIO`小姐也是非常辛苦的，**她负责从`ImageItem`先生手上接受数据，然后好好的存放进Redis或者是磁盘中哦**，这可不是一个轻松的活，让我们再次感谢`ImageIO`小姐！哦对了，**`ImageIO`小姐有时还需要把磁盘或Redis中的数据搬出来递给`ImageServer`小姐哦**\~
+- `ImageIO`: 负责将二进制格式的图片组织成`ImageItem`类，并与文件或Redis数据库进行交互。
 
-- 嘿嘿嘿\~，哎呀！对了，忘记介绍最最最最重要的`Engine`小姐了T_T，希望`Engine`小姐不要生气捏\~(￣▽￣)\~*。**`Engine`小姐其实就负责的就是协调小闹钟`StopConditions`、`Downloader`小姐哦，另外还需要管理不存在的`ImageServer`小姐**\~。哼哼哼，感觉也没什么大不了的嘛，感觉我上我也行(づ￣ 3￣)づ。
+- `Engine`: 负责整个框架的运行调度，包括为`Downloader`添加请求、检测是否到达停止条件等。
 
-- `ImageServer`和`ImageClient`是一对双子哦\~，**`ImageClient`妹妹向`ImageServer`姐姐发起撒娇请求后，姐姐很快就会满足她的！但目前唯一的遗憾是她们都不存在哦**\~T_T(还不是因为我不努力)
+- `ImageServer`和`ImageClient`: 用户可以通过`ImageClient`来查看下载结果，目前这两个模块只存在于概念中。
 
-呜\~呼\~，终于介绍完了，插会腰┑(￣Д ￣)┍。
-
-
-## 这里是使用方法哦
-
-当然是有使用方法的啦，但是我先不告诉你哦，才不是没空写文档呢！
-
-如果你一定想要知道的话，就先can can `demo.py`里的叭\~，心急可是吃不了热豆腐哦！
-
-我介绍完了，就先到这里吧，后面的区域，以后再来探索哦\~

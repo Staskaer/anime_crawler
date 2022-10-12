@@ -12,7 +12,7 @@ LOG_LEVEL = "INFO"
 MAX_CONCURRENT_REQUESTS = 16
 
 # 每个请求后的延迟时间(单位为秒)(建议不要太低)
-DELAY_AFTER_REQUEST = 1
+DELAY_AFTER_REQUEST = 3
 
 # 每个请求最多重试次数
 MAX_RETRY = 3
