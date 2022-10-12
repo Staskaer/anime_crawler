@@ -23,7 +23,7 @@
 
 所以最终的目标是实现一个**基于requests库、能够多线程下载、依赖少、定义爬取足够简单、配置灵活、能够定时启停并且有每次运行的停止条件、集成redis数据库、有客户端**的图像爬取框架。~~感觉主要还是针对二次元图片进行下载~~
 
-### 简单的使用说明
+### 运行demo(简单的使用说明)
 
 - 首先，先将此仓库的main分支下载到本地
 
@@ -105,7 +105,7 @@ if __name__ == "__main__":
 
 ```
 
-想要爬取一个网站，只需要定义自己的请求生成类，需要继承自`anime_crawler.RequestsGenerator`，然后重写`usr_generator`函数，并在这个函数中定义自己的爬取逻辑即可。
+想要爬取一个网站，只需要定义自己的请求生成类，需要继承自`anime_crawler.RequestsGenerator`，然后重写`usr_generator`函数，并在这个函数中定义自己的爬取逻辑即可。**详细的还是看一下`demo_advanced.py`哦**。
 
 另外一个函数是`generator_middleware`，可以看成是中间键，可以用于对Request对象添加headers，cookies等，默认这个函数什么也不做。
 
