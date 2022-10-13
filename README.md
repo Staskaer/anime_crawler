@@ -135,3 +135,8 @@ if __name__ == "__main__":
 
 - `ImageServer`和`ImageClient`: 用户可以通过`ImageClient`来查看下载结果，目前这两个模块只存在于概念中。
 
+## 后续计划
+
+- [ ] 添加提供web服务的组件
+- [ ] 更方便地统一添加cookies等
+- [ ] 支持为每个请求设置不同的代理
