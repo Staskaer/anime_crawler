@@ -103,9 +103,13 @@ class Downloader:
             add_count += 1
             try:
                 req = self._requests_repository.pop()
-            except:
+            except StopIteration:
                 self._logger.warning(
                     "requests_repository为空，关闭downloader，等待下一次开启")
+                self.close()
+                return False
+            except Exception as e:
+                self._logger.error("requests_repository出错，错误信息:{}".format(e))
                 self.close()
                 return False
             self._donwload(req)

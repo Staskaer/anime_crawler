@@ -40,6 +40,9 @@ class RequestsGenerator:
         generate = self.generator_middleware()
         while self._size < batch_size:
             self._size += 1
-            self.requests_block.append(next(generate))
+            try:
+                self.requests_block.append(next(generate))
+            except StopIteration:
+                break
         self._size = 0
         return self.requests_block
