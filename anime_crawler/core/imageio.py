@@ -65,7 +65,7 @@ class ImageIO:
                 key = self._connection.randomkey()
                 try:
                     value = self._connection.get(key)
-                except:
+                except Exception as e:
                     continue
                 if FILTER_ENABLE and not self._bloom_filter.find(key):
                     self._bloom_filter.add(key)

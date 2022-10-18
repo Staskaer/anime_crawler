@@ -85,8 +85,9 @@ class Downloader:
                                    timeout=TIMEOUT
                                    )
                 return response
-            except:
-                self._logger.warning("下载{}失败，重试第{}次".format(request_.url, i+1))
+            except Exception as e:
+                self._logger.warning(
+                    "下载{}失败，重试第{}次，出错原因{}".format(request_.url, i+1, e))
 
         self._logger.error("下载{}失败，放弃下载".format(request_.url))
         return None
@@ -119,7 +120,7 @@ class Downloader:
         '''
         开启downloader
         '''
-        if self._open != True:
+        if self._open is not True:
             self._logger.info("downloader已经开启")
             self._open = True
             self.fill_download_queue()
