@@ -14,7 +14,9 @@ class RequestsGenerator:
         url = "https://api.lolicon.app/setu/v2"
         paramrs = {
             "num": REQUESTS_BATCH_SIZE,
-            "keyword": "百合"}
+            # "r18":"true",
+            "keyword": "百合"
+        }
         while 1:
             r = get(url, paramrs, timeout=10)
             r = loads(r.text)
