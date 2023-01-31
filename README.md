@@ -2,9 +2,6 @@
 
 ---
 
-<div align="center">
-  <a href="docs/二刺螈README.md"> 二次元版本的文档(还在施工) </a>
-</div>
 
 ## 说明
 
