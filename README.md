@@ -31,7 +31,7 @@
 - 首先，先将此仓库的main分支下载到本地
 
 ```
-git clone https://github.com/ppxxxg22/anime_crawler.git
+git clone https://github.com/staskaer/anime_crawler.git
 ```
 
 - 在目录下有一个`demo.py`文件，里面给出了运行此框架的基本步骤
